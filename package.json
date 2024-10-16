@@ -1,0 +1,19 @@
+{
+  "name": "api_flutter_hbd",
+  "version": "1.0.0",
+  "description": "API FOR FLUTTER HBD",
+  "main": "index.js",
+  "scripts": {
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "Kimberlynn01"
+  },
+  "author": "Danudiraja",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.21.1",
+    "mysql2": "^3.11.3"
+  }
+}
