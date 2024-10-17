@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const createDBConnection = require("./database");
-const bcrypt = require("bcrypt");
+const bcryptjs = require("bcryptjs");
 const multer = require("multer");
 const upload = multer();
 
@@ -29,7 +29,7 @@ router.post("/add", upload.none(), async (req, res) => {
   }
 
   try {
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const hashedPassword = await bcryptjs.hash(password, 10);
 
     const sql = "INSERT INTO user (username, name, password) VALUES (?, ?, ?)";
     db.query(sql, [username, name, hashedPassword], (err, results) => {
