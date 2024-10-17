@@ -2,10 +2,11 @@ const mysql = require("mysql2");
 
 const createDBConnection = () => {
   const db = mysql.createConnection({
-    host: "localhost",
-    user: "root",
-    password: "",
-    database: "db_hbd",
+    host: 'autorack.proxy.rlwy.net',
+    port: 17500,
+    user: 'root', 
+    password: 'RhkEcIqbDpJPYmrxYQRHMpCxKynQjDLy', 
+    database: 'railway'
   });
 
   db.connect((err) => {
@@ -19,4 +20,4 @@ const createDBConnection = () => {
   return db;
 };
 
-module.exports = createDBConnection; // Mengekspor fungsi untuk membuat koneksi database
+module.exports = createDBConnection;e
