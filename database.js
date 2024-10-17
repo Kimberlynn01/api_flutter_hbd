@@ -20,4 +20,4 @@ const createDBConnection = () => {
   return db;
 };
 
-module.exports = createDBConnection;e
+module.exports = createDBConnection;
