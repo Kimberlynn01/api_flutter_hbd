@@ -1,7 +1,9 @@
 const express = require("express");
 const router = express.Router();
-const userRoute = require("./user"); // Mengimpor user.js
+const userRoute = require("./user");
+const imageRoute = require("./image");
 
-router.use("/user", userRoute); // Menggunakan userRoute
+router.use("/user", userRoute);
+router.use("/image", imageRoute);
 
-module.exports = router; // Mengekspor router
+module.exports = router;

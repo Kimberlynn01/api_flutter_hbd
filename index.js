@@ -4,6 +4,8 @@ const port = 3000;
 const route = require("./route");
 const db = require("./database");
 
+
+app.use(express.json());
 const Middleware = (req, res, next) => {
   const { auth } = req.query;
 
@@ -14,7 +16,6 @@ const Middleware = (req, res, next) => {
   }
 };
 
-app.use(express.json());
 app.use("/api/v1", Middleware);
 app.use("/api/v1", route);
 
