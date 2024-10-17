@@ -31,7 +31,7 @@ router.post("/add", upload.none(), async (req, res) => {
   try {
     const hashedPassword = await bcryptjs.hash(password, 10);
 
-    const sql = "INSERT INTO user (username, name, password) VALUES (?, ?, ?)";
+    const sql = "INSERT INTO USER (username, name, password) VALUES (?, ?, ?)";
     db.query(sql, [username, name, hashedPassword], (err, results) => {
       if (err) {
         return res.status(500).json({ error: err.message });
@@ -48,7 +48,7 @@ router.post("/add", upload.none(), async (req, res) => {
 router.delete("/delete/:id", async (req, res) => {
   const db = createDBConnection();
   const { id } = req.params;
-  const sql = "DELETE FROM user WHERE id = ?";
+  const sql = "DELETE FROM USER WHERE id = ?";
   db.query(sql, [id], (err, results) => {
     if (err) {
       return res.status(500).json({ error: err.message });
