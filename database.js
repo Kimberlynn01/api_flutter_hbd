@@ -2,11 +2,11 @@ const mysql = require("mysql2");
 
 const createDBConnection = () => {
   const db = mysql.createConnection({
-    host: 'autorack.proxy.rlwy.net',
-    port: 3306,
-    user: 'root', 
-    password: 'RhkEcIqbDpJPYmrxYQRHMpCxKynQjDLy', 
-    database: 'railway'
+    host: "autorack.proxy.rlwy.net",
+    port: 17500,
+    user: "root",
+    password: "RhkEcIqbDpJPYmrxYQRHMpCxKynQjDLy",
+    database: "railway",
   });
 
   db.connect((err) => {
