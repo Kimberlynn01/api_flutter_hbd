@@ -8,7 +8,7 @@ const upload = multer();
 router.get("/", (req, res) => {
   const db = createDBConnection();
 
-  const sql = "SELECT * FROM user";
+  const sql = "SELECT * FROM railway.user";
   db.query(sql, (err, results) => {
     if (err) {
       return res.status(500).json({ error: err.message });
