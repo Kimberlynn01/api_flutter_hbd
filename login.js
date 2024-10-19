@@ -10,7 +10,7 @@ app.use(bodyParser.json());
 const SECRET_KEY = "8D46igOlkeUKGOjbeqFlUJa1H3xN16";
 const USER_API_URL = "https://apiflutterhbd-production.up.railway.app/api/v1/user?auth=chiquine";
 
-app.post("/login", async (req, res) => {
+app.post("/", async (req, res) => {
   const { username, password } = req.body;
 
   try {
