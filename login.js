@@ -14,7 +14,7 @@ const SECRET_KEY = "8D46igOlkeUKGOjbeqFlUJa1H3xN16";
 const USER_API_URL = "https://apiflutterhbd-production.up.railway.app/api/v1/user?auth=chiquine";
 
 // Endpoint untuk login
-app.post("/login", async (req, res) => {
+app.post("/", async (req, res) => {
   const { username, password } = req.body; // Mengambil username dan password dari form-data
 
   try {
@@ -48,8 +48,4 @@ app.post("/login", async (req, res) => {
   }
 });
 
-// Jalankan server
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+module.exports = app;
