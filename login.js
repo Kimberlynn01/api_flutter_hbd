@@ -2,7 +2,7 @@ const express = require("express");
 const jwt = require("jsonwebtoken");
 const bodyParser = require("body-parser");
 const axios = require("axios");
-const bcrypt = require("bcrypt"); // Tambahkan bcrypt untuk verifikasi password
+const bcryptjs = require("bcryptjs");
 
 const app = express();
 
@@ -13,7 +13,7 @@ const USER_API_URL = "https://apiflutterhbd-production.up.railway.app/api/v1/use
 
 async function verifyPassword(inputPassword, hashedPassword) {
   try {
-    const match = await bcrypt.compare(inputPassword, hashedPassword);
+    const match = await bcryptjs.compare(inputPassword, hashedPassword);
     return match;
   } catch (error) {
     console.error(error);
