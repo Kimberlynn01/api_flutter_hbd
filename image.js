@@ -4,6 +4,7 @@ const createDBConnection = require("./database");
 const multer = require("multer");
 const upload = multer();
 const axios = require("axios");
+const FormData = require("form-data");
 
 const CLOUDINARY_URL = "https://api.cloudinary.com/v1_1/dphacrvql/image/upload";
 const CLOUDINARY_UPLOAD_PRESET = "szlempbv";
