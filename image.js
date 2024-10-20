@@ -5,7 +5,7 @@ const multer = require("multer");
 const upload = multer();
 const axios = require("axios");
 
-const CLOUDINARY_URL = "https://api.cloudinary.com/v1_1/YOUR_CLOUD_NAME/image/upload";
+const CLOUDINARY_URL = "https://api.cloudinary.com/v1_1/dphacrvql/image/upload";
 const CLOUDINARY_UPLOAD_PRESET = "szlempbv";
 
 router.get("/", async (req, res) => {
