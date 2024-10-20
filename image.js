@@ -25,6 +25,7 @@ router.get("/", async (req, res) => {
 
 router.post("/add", upload.single("image"), async (req, res) => {
   const { name, description } = req.body;
+  const db = createDBConnection(); // Pindahkan ini ke luar try
 
   if (!name || !req.file || !description) {
     return res.status(400).json({ error: "Please provide all required fields." });
@@ -32,12 +33,12 @@ router.post("/add", upload.single("image"), async (req, res) => {
 
   try {
     const formData = new FormData();
-    formData.append("file", req.file.buffer);
+    formData.append("file", req.file.buffer, req.file.originalname); // Perbaiki pengiriman file
     formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
 
     const response = await axios.post(CLOUDINARY_URL, formData, {
       headers: {
-        "Content-Type": "multipart/form-data",
+        ...formData.getHeaders(), // Pastikan header diatur dengan benar
       },
     });
 
@@ -54,7 +55,7 @@ router.post("/add", upload.single("image"), async (req, res) => {
   } catch (error) {
     return res.status(500).json({ error: error.message });
   } finally {
-    db.end();
+    db.end(); // db.end tetap dijalankan di sini
   }
 });
 
