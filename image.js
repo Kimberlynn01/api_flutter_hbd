@@ -25,7 +25,7 @@ router.get("/", async (req, res) => {
 
 router.post("/add", upload.single("image"), async (req, res) => {
   const { name, description } = req.body;
-  const db = createDBConnection(); // Pindahkan ini ke luar try
+  const db = createDBConnection(); 
 
   if (!name || !req.file || !description) {
     return res.status(400).json({ error: "Please provide all required fields." });
@@ -33,18 +33,17 @@ router.post("/add", upload.single("image"), async (req, res) => {
 
   try {
     const formData = new FormData();
-    formData.append("file", req.file.buffer, req.file.originalname); // Perbaiki pengiriman file
+    formData.append("file", req.file.buffer, req.file.originalname);
     formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
 
     const response = await axios.post(CLOUDINARY_URL, formData, {
       headers: {
-        ...formData.getHeaders(), // Pastikan header diatur dengan benar
+        ...formData.getHeaders(),
       },
     });
 
     const imageUrl = response.data.secure_url;
 
-    // Simpan data ke database
     const sql = "INSERT INTO image (name, image, description) VALUES (?, ?, ?)";
     db.query(sql, [name, imageUrl, description], (err, results) => {
       if (err) {
@@ -55,7 +54,7 @@ router.post("/add", upload.single("image"), async (req, res) => {
   } catch (error) {
     return res.status(500).json({ error: error.message });
   } finally {
-    db.end(); // db.end tetap dijalankan di sini
+    db.end();
   }
 });
 
