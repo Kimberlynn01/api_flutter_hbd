@@ -2,8 +2,11 @@ const express = require("express");
 const router = express.Router();
 const createDBConnection = require("./database");
 const multer = require("multer");
-const upload = multer({ storage: multer.memoryStorage() });
-const bucket = require("./firebase-config");
+const upload = multer();
+const axios = require("axios");
+
+const CLOUDINARY_URL = "https://api.cloudinary.com/v1_1/YOUR_CLOUD_NAME/image/upload";
+const CLOUDINARY_UPLOAD_PRESET = "szlempbv";
 
 router.get("/", async (req, res) => {
   const db = createDBConnection();
@@ -20,7 +23,6 @@ router.get("/", async (req, res) => {
 });
 
 router.post("/add", upload.single("image"), async (req, res) => {
-  const db = createDBConnection();
   const { name, description } = req.body;
 
   if (!name || !req.file || !description) {
@@ -28,33 +30,26 @@ router.post("/add", upload.single("image"), async (req, res) => {
   }
 
   try {
-    const fileName = `${Date.now()}_${req.file.originalname}`;
-    const file = bucket.file(fileName);
+    const formData = new FormData();
+    formData.append("file", req.file.buffer);
+    formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
 
-    const stream = file.createWriteStream({
-      metadata: {
-        contentType: req.file.mimetype,
+    const response = await axios.post(CLOUDINARY_URL, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
       },
     });
 
-    stream.on("error", (err) => {
-      return res.status(500).json({ error: err.message });
+    const imageUrl = response.data.secure_url;
+
+    // Simpan data ke database
+    const sql = "INSERT INTO image (name, image, description) VALUES (?, ?, ?)";
+    db.query(sql, [name, imageUrl, description], (err, results) => {
+      if (err) {
+        return res.status(500).json({ error: err.message });
+      }
+      return res.status(200).json({ message: "Image Successfully Added!", imageUrl });
     });
-
-    stream.on("finish", async () => {
-      await file.makePublic();
-      const imageUrl = `https://storage.googleapis.com/${bucket.name}/${fileName}`;
-
-      const sql = "INSERT INTO image (name, image, description) VALUES (?, ?, ?)";
-      db.query(sql, [name, imageUrl, description], (err, results) => {
-        if (err) {
-          return res.status(500).json({ error: err.message });
-        }
-        return res.status(200).json({ message: "Image Successfully Added!", imageUrl });
-      });
-    });
-
-    stream.end(req.file.buffer);
   } catch (error) {
     return res.status(500).json({ error: error.message });
   } finally {
