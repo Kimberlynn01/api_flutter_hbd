@@ -1,5 +1,5 @@
 const admin = require("firebase-admin");
-const serviceAccount = require("./flutter-happybirtday-firebase-adminsdk-crfws-a25c4a2386.json"); // Ganti dengan path ke file service account key Firebase-mu
+const serviceAccount = require("./flutter-happybirtday-firebase-adminsdk-crfws-a25c4a2386.json");
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
