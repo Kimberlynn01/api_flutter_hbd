@@ -2,7 +2,8 @@ const express = require("express");
 const router = express.Router();
 const createDBConnection = require("./database");
 const multer = require("multer");
-const upload = multer();
+const upload = multer({ storage: multer.memoryStorage() });
+const bucket = require("./firebase-config");
 
 router.get("/", async (req, res) => {
   const db = createDBConnection();
@@ -18,23 +19,42 @@ router.get("/", async (req, res) => {
   });
 });
 
-router.post("/add", upload.none(), async (req, res) => {
+router.post("/add", upload.single("image"), async (req, res) => {
   const db = createDBConnection();
-  const { name, image, description } = req.body;
+  const { name, description } = req.body;
 
-  if (!name || !image || !description) {
+  if (!name || !req.file || !description) {
     return res.status(400).json({ error: "Please provide all required fields." });
   }
 
   try {
-    const sql = "INSERT INTO image (name, image, description) VALUES (?, ?, ?) ";
+    const fileName = `${Date.now()}_${req.file.originalname}`;
+    const file = bucket.file(fileName);
 
-    db.query(sql, [name, image, description], (err, results) => {
-      if (err) {
-        return res.status(500).json({ error: err.message });
-      }
-      return res.status(200).json({ message: "Image Successfully Added!" });
+    const stream = file.createWriteStream({
+      metadata: {
+        contentType: req.file.mimetype,
+      },
     });
+
+    stream.on("error", (err) => {
+      return res.status(500).json({ error: err.message });
+    });
+
+    stream.on("finish", async () => {
+      await file.makePublic();
+      const imageUrl = `https://storage.googleapis.com/${bucket.name}/${fileName}`;
+
+      const sql = "INSERT INTO image (name, image, description) VALUES (?, ?, ?)";
+      db.query(sql, [name, imageUrl, description], (err, results) => {
+        if (err) {
+          return res.status(500).json({ error: err.message });
+        }
+        return res.status(200).json({ message: "Image Successfully Added!", imageUrl });
+      });
+    });
+
+    stream.end(req.file.buffer);
   } catch (error) {
     return res.status(500).json({ error: error.message });
   } finally {
