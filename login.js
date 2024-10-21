@@ -29,7 +29,7 @@ app.post("/", async (req, res) => {
 
         res.json({
           token: token,
-          name: user.username,
+          name: user.name,
         });
       } else {
         res.status(401).json({ error: "Invalid username or password" });
