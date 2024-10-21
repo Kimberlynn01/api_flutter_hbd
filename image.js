@@ -25,7 +25,7 @@ router.get("/", async (req, res) => {
 
 router.post("/add", upload.single("image"), async (req, res) => {
   const { name, description } = req.body;
-  const db = createDBConnection(); 
+  const db = createDBConnection();
 
   if (!name || !req.file || !description) {
     return res.status(400).json({ error: "Please provide all required fields." });
@@ -44,7 +44,7 @@ router.post("/add", upload.single("image"), async (req, res) => {
 
     const imageUrl = response.data.secure_url;
 
-    const sql = "INSERT INTO image (name, image, description) VALUES (?, ?, ?)";
+    const sql = "INSERT INTO image (name, image, description, date) VALUES (?, ?, ?, NOW())";
     db.query(sql, [name, imageUrl, description], (err, results) => {
       if (err) {
         return res.status(500).json({ error: err.message });
