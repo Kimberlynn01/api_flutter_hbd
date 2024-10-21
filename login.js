@@ -13,23 +13,23 @@ const SECRET_KEY = "8D46igOlkeUKGOjbeqFlUJa1H3xN16";
 const USER_API_URL = "https://apiflutterhbd-production.up.railway.app/api/v1/user?auth=chiquine";
 
 app.post("/", async (req, res) => {
-  const { username, password } = req.body;
+  const { name, password } = req.body;
 
   try {
     const response = await axios.get(USER_API_URL);
     const users = response.data;
 
-    const user = users.find((u) => u.username === username);
+    const user = users.find((u) => u.name === name);
 
     if (user) {
       const isPasswordValid = bcrypt.compareSync(password, user.password);
 
       if (isPasswordValid) {
-        const token = jwt.sign({ userId: user.id, username: user.username }, SECRET_KEY, { expiresIn: "1h" });
+        const token = jwt.sign({ userId: user.id, name: user.name }, SECRET_KEY, { expiresIn: "1h" });
 
         res.json({
           token: token,
-          name: user.name,
+          name: user.username,
         });
       } else {
         res.status(401).json({ error: "Invalid username or password" });
