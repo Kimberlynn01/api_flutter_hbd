@@ -3,7 +3,6 @@ const router = express.Router();
 const createDBConnection = require("./database");
 const bcryptjs = require("bcryptjs");
 const multer = require("multer");
-const mysql = require("mysql2/promise");
 const upload = multer();
 const jwt = require("jsonwebtoken");
 
@@ -128,10 +127,10 @@ router.put(
       const token = jwt.sign(
         {
           userId: id,
-          username: username, // Retrieve from the database
-          name: name, // Retrieve from the database
-          picture: pictureUrl || user[0].picture || undefined, // Existing or new picture
-          banner: bannerUrl || user[0].banner || undefined, 
+          username: username,
+          name: name,
+          picture: pictureUrl || user[0].picture || undefined,
+          banner: bannerUrl || user[0].banner || undefined,
         },
         SECRET_KEY,
         { expiresIn: "1h" }

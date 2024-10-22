@@ -1,4 +1,5 @@
 const mysql = require("mysql2");
+const mysql = require("mysql2/promise");
 
 const createDBConnection = () => {
   const db = mysql.createConnection({
