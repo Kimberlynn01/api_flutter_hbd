@@ -61,14 +61,10 @@ router.put(
     const { id } = req.params;
 
     // Variables to hold existing user information
-    let username;
-    let name;
+    let existingUser;
 
     const updates = [];
     const params = [];
-
-    let bannerUrl = null;
-    let pictureUrl = null;
 
     try {
       // First, retrieve the existing user information from the database
@@ -78,13 +74,16 @@ router.put(
         return res.status(404).json({ error: "User not found." });
       }
 
-      // Assign existing values
-      username = user[0].username;
-      name = user[0].name;
+      existingUser = user[0];
 
+      // Upload new banner if provided
       if (req.files.banner && req.files.banner.length > 0) {
+        const bannerFile = req.files.banner[0];
         const formData = new FormData();
-        formData.append("file", req.files.banner[0].buffer, req.files.banner[0].originalname);
+        formData.append("file", bannerFile.buffer, {
+          filename: bannerFile.originalname,
+          contentType: bannerFile.mimetype,
+        });
         formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
 
         const response = await axios.post(CLOUDINARY_URL, formData, {
@@ -93,14 +92,18 @@ router.put(
           },
         });
 
-        bannerUrl = response.data.secure_url;
         updates.push("banner = ?");
-        params.push(bannerUrl);
+        params.push(response.data.secure_url); // New banner URL
       }
 
+      // Upload new picture if provided
       if (req.files.picture && req.files.picture.length > 0) {
+        const pictureFile = req.files.picture[0];
         const formData = new FormData();
-        formData.append("file", req.files.picture[0].buffer, req.files.picture[0].originalname);
+        formData.append("file", pictureFile.buffer, {
+          filename: pictureFile.originalname,
+          contentType: pictureFile.mimetype,
+        });
         formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
 
         const response = await axios.post(CLOUDINARY_URL, formData, {
@@ -109,9 +112,8 @@ router.put(
           },
         });
 
-        pictureUrl = response.data.secure_url;
         updates.push("picture = ?");
-        params.push(pictureUrl);
+        params.push(response.data.secure_url); // New picture URL
       }
 
       // If no updates are made, you can skip the SQL update
@@ -120,17 +122,16 @@ router.put(
       }
 
       params.push(id);
-
       const sql = `UPDATE USER SET ${updates.join(", ")} WHERE id = ?`;
       await db.query(sql, params); // Use await here
 
       const token = jwt.sign(
         {
           userId: id,
-          username: username,
-          name: name,
-          picture: pictureUrl || user[0].picture || undefined,
-          banner: bannerUrl || user[0].banner || undefined,
+          username: existingUser.username,
+          name: existingUser.name,
+          picture: req.files.picture ? params[params.length - 1] : existingUser.picture, // Use new picture or existing
+          banner: req.files.banner ? params[params.length - 2] : existingUser.banner, // Use new banner or existing
         },
         SECRET_KEY,
         { expiresIn: "1h" }
@@ -138,6 +139,7 @@ router.put(
 
       res.status(200).json({ message: "User successfully updated!", token });
     } catch (error) {
+      console.error(error);
       return res.status(500).json({ error: error.message });
     } finally {
       await db.end();
