@@ -25,7 +25,7 @@ app.post("/", async (req, res) => {
       const isPasswordValid = bcrypt.compareSync(password, user.password);
 
       if (isPasswordValid) {
-        const token = jwt.sign({ userId: user.id, username: user.username, picture: user.picture, banner: user.banner }, SECRET_KEY, { expiresIn: "1h" });
+        const token = jwt.sign({ userId: user.id, username: user.username, name: user.name, picture: user.picture, banner: user.banner }, SECRET_KEY, { expiresIn: "1h" });
 
         res.json({
           token: token,
