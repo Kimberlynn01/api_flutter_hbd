@@ -57,7 +57,7 @@ router.put(
     { name: "picture", maxCount: 1 },
   ]),
   (req, res) => {
-    const db = createDBConnection(); // No need to await this, as it doesn't return a promise
+    const db = createDBConnection(); // Use your existing DB connection
     const { id } = req.params;
 
     // Variables to hold existing user information
@@ -70,7 +70,7 @@ router.put(
     let bannerUrl = null;
     let pictureUrl = null;
 
-    // First, retrieve the existing user information from the database
+    // Retrieve the existing user information from the database
     db.query("SELECT username, name, picture, banner FROM USER WHERE id = ?", [id], (err, user) => {
       if (err) {
         return res.status(500).json({ error: err.message });
@@ -86,28 +86,23 @@ router.put(
 
       // Update banner if provided
       if (req.files.banner && req.files.banner.length > 0) {
-        // Add your Cloudinary logic or another file handling logic here
-        // Assuming a function uploadToCloudinary is defined
         uploadToCloudinary(req.files.banner[0].buffer, req.files.banner[0].originalname)
           .then((url) => {
             bannerUrl = url;
             updates.push("banner = ?");
             params.push(bannerUrl);
-            // Continue with picture update if provided
             processPictureUpdate();
           })
           .catch((error) => {
             return res.status(500).json({ error: "Error uploading banner: " + error.message });
           });
       } else {
-        // Proceed to picture update if no banner is provided
-        processPictureUpdate();
+        processPictureUpdate(); // Proceed to picture update if no banner is provided
       }
 
       // Function to handle picture update
       function processPictureUpdate() {
         if (req.files.picture && req.files.picture.length > 0) {
-          // Add your Cloudinary logic or another file handling logic here
           uploadToCloudinary(req.files.picture[0].buffer, req.files.picture[0].originalname)
             .then((url) => {
               pictureUrl = url;
