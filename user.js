@@ -70,8 +70,26 @@ router.put(
     let bannerUrl = null;
     let pictureUrl = null;
 
+    // Function to upload images to Cloudinary
+    const uploadImageToCloudinary = async (fileBuffer, filename) => {
+      const formData = new FormData();
+      formData.append("file", fileBuffer, filename);
+      formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
+
+      try {
+        const response = await axios.post(CLOUDINARY_URL, formData, {
+          headers: {
+            ...formData.getHeaders(),
+          },
+        });
+        return response.data.secure_url;
+      } catch (error) {
+        throw new Error("Error uploading image to Cloudinary: " + error.message);
+      }
+    };
+
     // Retrieve the existing user information from the database
-    db.query("SELECT username, name, picture, banner FROM USER WHERE id = ?", [id], (err, user) => {
+    db.query("SELECT username, name, picture, banner FROM USER WHERE id = ?", [id], async (err, user) => {
       if (err) {
         return res.status(500).json({ error: err.message });
       }
@@ -85,41 +103,21 @@ router.put(
       name = user[0].name;
 
       // Update banner if provided
-      if (req.files.banner && req.files.banner.length > 0) {
-        uploadToCloudinary(req.files.banner[0].buffer, req.files.banner[0].originalname)
-          .then((url) => {
-            bannerUrl = url;
-            updates.push("banner = ?");
-            params.push(bannerUrl);
-            processPictureUpdate();
-          })
-          .catch((error) => {
-            return res.status(500).json({ error: "Error uploading banner: " + error.message });
-          });
-      } else {
-        processPictureUpdate(); // Proceed to picture update if no banner is provided
-      }
-
-      // Function to handle picture update
-      function processPictureUpdate() {
-        if (req.files.picture && req.files.picture.length > 0) {
-          uploadToCloudinary(req.files.picture[0].buffer, req.files.picture[0].originalname)
-            .then((url) => {
-              pictureUrl = url;
-              updates.push("picture = ?");
-              params.push(pictureUrl);
-              finalizeUpdate();
-            })
-            .catch((error) => {
-              return res.status(500).json({ error: "Error uploading picture: " + error.message });
-            });
-        } else {
-          finalizeUpdate(); // Proceed to final update if no picture
+      try {
+        if (req.files.banner && req.files.banner.length > 0) {
+          bannerUrl = await uploadImageToCloudinary(req.files.banner[0].buffer, req.files.banner[0].originalname);
+          updates.push("banner = ?");
+          params.push(bannerUrl);
         }
-      }
 
-      // Final update to the database
-      function finalizeUpdate() {
+        // Update picture if provided
+        if (req.files.picture && req.files.picture.length > 0) {
+          pictureUrl = await uploadImageToCloudinary(req.files.picture[0].buffer, req.files.picture[0].originalname);
+          updates.push("picture = ?");
+          params.push(pictureUrl);
+        }
+
+        // Final update to the database
         if (updates.length === 0) {
           return res.status(400).json({ error: "Please provide at least one field to update." });
         }
@@ -146,6 +144,8 @@ router.put(
 
           res.status(200).json({ message: "User successfully updated!", token });
         });
+      } catch (error) {
+        return res.status(500).json({ error: error.message });
       }
     });
   }
