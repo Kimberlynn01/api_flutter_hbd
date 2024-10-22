@@ -3,6 +3,7 @@ const router = express.Router();
 const createDBConnection = require("./database");
 const bcryptjs = require("bcryptjs");
 const multer = require("multer");
+const mysql = require("mysql2/promise");
 const upload = multer();
 const jwt = require("jsonwebtoken");
 
@@ -57,7 +58,7 @@ router.put(
     { name: "picture", maxCount: 1 },
   ]),
   async (req, res) => {
-    const db = createDBConnection();
+    const db = await createDBConnection(); // Use await here
     const { id } = req.params;
 
     // Variables to hold existing user information
@@ -72,8 +73,7 @@ router.put(
 
     try {
       // First, retrieve the existing user information from the database
-      const userQuery = "SELECT username, name, picture, banner FROM USER WHERE id = ?";
-      const [user] = await db.query(userQuery, [id]);
+      const [user] = await db.query("SELECT username, name, picture, banner FROM USER WHERE id = ?", [id]);
 
       if (user.length === 0) {
         return res.status(404).json({ error: "User not found." });
@@ -123,30 +123,25 @@ router.put(
       params.push(id);
 
       const sql = `UPDATE USER SET ${updates.join(", ")} WHERE id = ?`;
+      await db.query(sql, params); // Use await here
 
-      db.query(sql, params, (err, results) => {
-        if (err) {
-          return res.status(500).json({ error: err.message });
-        }
+      const token = jwt.sign(
+        {
+          userId: id,
+          username: username, // Retrieve from the database
+          name: name, // Retrieve from the database
+          picture: pictureUrl || user[0].picture || undefined, // Existing or new picture
+          banner: bannerUrl || user[0].banner || undefined, 
+        },
+        SECRET_KEY,
+        { expiresIn: "1h" }
+      );
 
-        const token = jwt.sign(
-          {
-            userId: id,
-            username: username, // Retrieve from the database
-            name: name, // Retrieve from the database
-            picture: pictureUrl || user[0].picture || undefined, // Existing or new picture
-            banner: bannerUrl || user[0].banner || undefined, // Existing or new banner
-          },
-          SECRET_KEY,
-          { expiresIn: "1h" }
-        );
-
-        res.status(200).json({ message: "User successfully updated!", token });
-      });
+      res.status(200).json({ message: "User successfully updated!", token });
     } catch (error) {
       return res.status(500).json({ error: error.message });
     } finally {
-      db.end();
+      await db.end();
     }
   }
 );
