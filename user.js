@@ -59,11 +59,10 @@ router.put(
   async (req, res) => {
     const db = createDBConnection();
     const { id } = req.params;
-    const { banner, picture } = req.body;
 
-    if (!banner && !picture) {
-      return res.status(400).json({ error: "Please provide at least one field to update." });
-    }
+    // Variables to hold existing user information
+    let username;
+    let name;
 
     const updates = [];
     const params = [];
@@ -72,6 +71,18 @@ router.put(
     let pictureUrl = null;
 
     try {
+      // First, retrieve the existing user information from the database
+      const userQuery = "SELECT username, name, picture, banner FROM USER WHERE id = ?";
+      const [user] = await db.query(userQuery, [id]);
+
+      if (user.length === 0) {
+        return res.status(404).json({ error: "User not found." });
+      }
+
+      // Assign existing values
+      username = user[0].username;
+      name = user[0].name;
+
       if (req.files.banner && req.files.banner.length > 0) {
         const formData = new FormData();
         formData.append("file", req.files.banner[0].buffer, req.files.banner[0].originalname);
@@ -104,6 +115,11 @@ router.put(
         params.push(pictureUrl);
       }
 
+      // If no updates are made, you can skip the SQL update
+      if (updates.length === 0) {
+        return res.status(400).json({ error: "Please provide at least one field to update." });
+      }
+
       params.push(id);
 
       const sql = `UPDATE USER SET ${updates.join(", ")} WHERE id = ?`;
@@ -116,10 +132,10 @@ router.put(
         const token = jwt.sign(
           {
             userId: id,
-            username: req.body.username,
-            name: req.body.name,
-            picture: pictureUrl || undefined,
-            banner: bannerUrl || undefined,
+            username: username, // Retrieve from the database
+            name: name, // Retrieve from the database
+            picture: pictureUrl || user[0].picture || undefined, // Existing or new picture
+            banner: bannerUrl || user[0].banner || undefined, // Existing or new banner
           },
           SECRET_KEY,
           { expiresIn: "1h" }
