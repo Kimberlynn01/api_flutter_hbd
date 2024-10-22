@@ -6,6 +6,7 @@ const multer = require("multer");
 const upload = multer();
 const jwt = require("jsonwebtoken");
 const FormData = require("form-data");
+const axios = require("axios");
 
 const SECRET_KEY = "8D46igOlkeUKGOjbeqFlUJa1H3xN16";
 const CLOUDINARY_URL = "https://api.cloudinary.com/v1_1/dphacrvql/image/upload";
