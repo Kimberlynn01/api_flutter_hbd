@@ -78,7 +78,9 @@ router.put("/update/:id", upload.single("file"), async (req, res) => {
     if (err) {
       return res.status(500).json({ error: err.message });
     }
-    res.status(200).json({ message: "User successfully updated!" });
+
+    const token = jwt.sign({ userId: user.id, username: user.username, name: user.name, picture: user.picture, banner: user.banner }, SECRET_KEY, { expiresIn: "1h" });
+    res.status(200).json({ message: "User successfully updated!", token: token });
   });
 
   db.end();
